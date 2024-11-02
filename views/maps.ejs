@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima en Vivo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="/styles/main.css">
+    <script src="https://kit.fontawesome.com/ebd8785379.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+    <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
+
+
+</head>
+
+    
+    <body id="main" class="dia">
+    <!-- Navbar -->
+    <nav class="navbar nav navbar-expand-lg w-100 fixed-top mb-5">
+        <div class="container-fluid">
+            <a class="navbar-brand text-light" href="/">ClimaApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active text-light" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="#">Link</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown">
+                            Menú
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Action</a></li>
+                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Something else</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" method="post">
+                    <input class="form-control me-2" name="citySearch" type="text" placeholder="Buscar ciudad" aria-label="Search">
+                    <button id="searchButton" class="btn btn-outline-light" type="submit" formaction="/city">Buscar</button>
+                </form>
+                <form id="locationForm" action="/currentLoc" method="post" class="ms-2">
+                    <input type="hidden" id="lat" name="lat">
+                    <input type="hidden" id="lon" name="lon">
+                    <button id="currentLocation" class="btn btn-outline-light" type="button">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido del Clima -->
+    <div class="container container-info position-relative">
+        <div id="sol-luna" class="sol sombra-sol">
+        <div class="manchas-luna"></div>
+        </div>
+        <div id="nube" class="nube"></div>
+        <div class="row rounded blur-effect sombra ">
+            <div class="col-6 ">
+                <div class="ciudad-actual">
+                    <h2 class="text-light"><%= weatherItem.name %>, <%= weatherItem.sys.country %></h2>
+                </div>
+                <div class="temperatura-actual">
+                    <h1 class="text-light"><%= weatherItem.main.temp %> C°</h1>
+                    <span class="tooltipTxt"><p>Temperatura actual</p></span>
+                </div>
+                <div class="temperatura-info">
+                    <ul class="info-clima">
+                        <!-- <li>
+                            <p><%= weatherItem.weather[0].main %></p>
+                        </li> -->
+                        <li>
+                            <p>Descripción: <%= weatherItem.weather[0].description %></p>
+                        </li>
+                        <li>
+                            <p>Sensación térmica: <%= weatherItem.main.feels_like %> C°</p>
+                        </li>
+                        <li>
+                            <p>tempMin: <%= weatherItem.main.temp_min %> C°</p>
+                        </li>
+                        <li>
+                            <p>tempMax: <%= weatherItem.main.temp_max %> C°</p>
+                        </li>
+                        <li>
+                            <p>Humedad: <%= weatherItem.main.humidity %>%</p>
+                        </li>
+                        <li>
+                            <p>Punto de rocio: 29°C</p>
+                        </li>
+                        <li>
+                            <p>Nubes: <%= weatherItem.clouds.all %></p>
+                        </li>
+                        <li>
+                            <p>Amanecer: <%=  new Date(weatherItem.sys.sunrise * 1000).getHours()%>:<%=  new Date(weatherItem.sys.sunrise * 1000).getMinutes()%> am</p>
+                        </li>
+                        <li>
+                            <p>Atardecer: <%=  new Date(weatherItem.sys.sunset * 1000).getHours()%>:<%=  new Date(weatherItem.sys.sunset * 1000).getMinutes()%> pm</p>
+                        </li>
+                        <li>
+                            <p>descripción: Nublado</p>
+                        </li>
+                        <!-- 
+                        <li>
+                            <p>Punto de rocio: 29°C</p>
+                        </li>
+                        <li>
+                            <p>tempMin: 26°C</p>
+                        </li>
+                        <li>
+                            <p>tempMax: 30°C</p>
+                        </li>
+                        <li>
+                            <p>Humedad: 75%</p>
+                        </li>
+                        <li>
+                            <p>descripción: Nublado</p>
+                        </li>
+                        <li>
+                            <p>Punto de rocio: 29°C</p>
+                        </li> -->
+                    </ul>
+                </div>
+            </div>
+            <div class="col-6 sombra rounded bg-dark position-relative">
+                <div id="windy"  class="container rounded shadow" style="width: 100%; height: 100%; max-width: 100%; max-height: 100%; box-sizing: border-box;"></div>
+            </div>
+        </div>
+        <div class="row blur-effect sombra pronostico rounded mt-3 mb-3 pt-4">
+                <% Object.keys(forecast).forEach((day, index) => { %> 
+                  <div class="col-2 text-center posicion-relativa">
+                    <!-- Botón para abrir el div correspondiente -->
+                    <button class="btnAbrir" data-index="<%= index %>">
+                      <h3 class="text-light">
+                        <%= new Date(day).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }) %>
+                      </h3>
+                      <img src="http://openweathermap.org/img/wn/<%= forecast[day][0].weather[0].icon %>.png" 
+                           alt="<%= forecast[day][0].weather[0].description %>">
+                      <p class="temp-range">
+                        <%= Math.min(...forecast[day].map(h => h.main.temp_min)) %>°C /
+                        <%= Math.max(...forecast[day].map(h => h.main.temp_max)) %>°C
+                      </p>
+                    </button>
+              
+                    <!-- Div oculto con el pronóstico detallado por horas -->
+                    <div id="div-<%= index %>" class="miDiv container blur-effect sombra pronostico-detallado" 
+                         aria-hidden="true" style="display: none;">
+                      <h1 class="text-light">Pronóstico para <%= new Date(day).toLocaleDateString('es-ES') %></h1>
+                      <div class="horas-container">
+                        <% forecast[day].forEach((hourData) => { %>
+                          <div class="detalle-hora">
+                            <p><strong>Hora:</strong> <%= new Date(hourData.dt_txt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) %></p>
+                            <p><strong>Temp:</strong> <%= hourData.main.temp %>°C</p>
+                            <p><strong>Descripción:</strong> <%= hourData.weather[0].description %></p>
+                            <p><strong>Viento:</strong> <%= hourData.wind.speed %> m/s</p>
+                            <p><strong>Humedad:</strong> <%= hourData.main.humidity %>%</p>
+                            <p><strong>Prob. lluvia:</strong> <%= Math.round(hourData.pop * 100) %>%</p>
+                            <hr>
+                          </div>
+                        <% }) %>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+        </div>
+
+    <script>
+const nube = document.getElementById('nube')
+
+let velocidad = 1;
+
+function mover(){
+    let posicionActual = nube.offsetLeft;
+
+    if(posicionActual > window.innerWidth){
+        nube.style.left = "-500px";
+    } else {
+        nube.style.left = posicionActual + velocidad + 'px';
+    }
+
+    requestAnimationFrame(mover);
+}
+
+mover();
+
+
+const botones = document.querySelectorAll('.btnAbrir');
+const divs = document.querySelectorAll('.miDiv');
+
+  // Función para abrir el div correspondiente
+  botones.forEach(boton => {
+    boton.addEventListener('click', (event) => {
+      event.stopPropagation();
+
+      // Ocultar todos los divs antes de mostrar el correspondiente
+      divs.forEach(div => div.style.display = 'none');
+
+      const index = boton.getAttribute('data-index');
+      const divSeleccionado = document.getElementById(`div-${index}`);
+
+      if (divSeleccionado) {
+        divSeleccionado.style.display = 'block';
+      }
+    });
+  });
+
+  // Cerrar los divs al hacer clic fuera de ellos
+  document.addEventListener('click', (event) => {
+    if (![...divs].some(div => div.contains(event.target))) {
+      divs.forEach(div => div.style.display = 'none');
+    }
+  });
+
+  // Evitar que los clics dentro del div lo cierren
+  divs.forEach(div => {
+    div.addEventListener('click', (event) => {
+      event.stopPropagation();
+    });
+  });
+
+        const options = {
+            key: 'H6QzvguNyd8dt2cNaOcGFU52W4cBdMX6',
+
+            lat: "<%= weatherItem.coord.lat %>",
+            lon: "<%= weatherItem.coord.lon %>",
+            zoom: 8
+        };
+
+        windyInit(options, (windyAPI) =>{
+
+        const { map } = windyAPI;
+        })
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+    
+    <script>
+        function convertirTiempo(UNIX_timestamp, timeZome){
+            var t = new Date(UNIX_timestamp * 1000);
+            var hora = t.getHours();
+            return hora;
+        }
+
+
+        //  for (let i = 0; i < 3; i++) {
+            
+        //     console.log(convertirDia(forecastData.list[i].dt));
+        // }
+        
+
+
+
+        // let horaActual = new Date().getHours();
+        let horaActual = convertirTiempo(<%= weatherItem.dt %>, <%= weatherItem.timezone %>);
+        console.log(horaActual)
+
+
+        // let iconoClima = document.getElementById("condicion-actual-img");
+        // //console.log(horaActual);
+        // // let condicionActualTxt = document.getElementById("condicion-actual");
+        let idCondicion = "<%= weatherItem.weather[0].id %>"
+        // //console.log(idCondicion)
+        console.log(idCondicion)
+        let body = document.getElementById('main');
+        let solLuna = document.getElementById('sol-luna')
+
+        if (horaActual < 6 || horaActual > 17) {
+            body.classList = 'noche'
+            solLuna.classList = 'luna sombra-luna'
+        } else if(horaActual >= 6 || horaActual <= 17){
+            body.classList = 'dia'
+        }
+
+        if(idCondicion >= 800 && idCondicion <= 832){
+        //     // condicionActualTxt.innerHTML = "Tormenta";
+        //     iconoClima.setAttribute('src', 'https://openweathermap.org/img/wn/11d@2x.png')
+        // } else if (idCondicion >= 300 && idCondicion <= 531){
+        //     // condicionActualTxt.innerHTML = "Lluvia";
+        //     document.body.style.backgroundImage = 'url(/images/Lluvia.jpeg)'
+        //     if(horaActual >= 6 && horaActual <= 18){
+        //         iconoClima.setAttribute('src', 'https://openweathermap.org/img/wn/10d@2x.png')
+        //     } else if(horaActual <= 6 || horaActual >= 18){
+        //         iconoClima.setAttribute('src', 'https://openweathermap.org/img/wn/10n@2x.png')
+        //     }
+        }
+
+        document.getElementById('currentLocation').addEventListener('click', function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            // Coloca las coordenadas en los campos ocultos del formulario
+            document.getElementById('lat').value = position.coords.latitude;
+            document.getElementById('lon').value = position.coords.longitude;
+
+            // Envía el formulario
+            document.getElementById('locationForm').submit();
+        }); 
+    } else {
+        console.log('Geolocalización no soportada');
+    }
+});
+
+    </script>
+</body>
+</html>
